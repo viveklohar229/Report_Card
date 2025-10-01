@@ -149,43 +149,49 @@ export default function ReportCard() {
     ];
 
     //  Recurrent Checks
-    const fleets = ["AW139", "H145", "N3"];
-    const recurrentChecks = crewReport
-        ? crewReport.recurrentChecks.trainings.map((t: any, idx: number) => ({
-            id: idx + 1,
-            training: t.training,
-            ...fleets.reduce((acc, fleet) => {
-                if (t.fleet === fleet) {
-                    acc[fleet.toLowerCase()] = {
-                        date: t.validUntil,
-                        bg: t.bgrColor,
-                        text: t.textColor,
-                    };
-                }
-                return acc;
-            }, {} as any),
-        }))
-        : [];
+const fleets = crewReport
+  ? Array.from(new Set(crewReport.recurrentChecks.trainings.map((t: any) => t.fleet)))
+  : [];
 
-    const checksColumns = [
-        { title: "Check", dataIndex: "training", key: "training" },
-        ...fleets.map((fleet) => ({
-            title: fleet,
-            dataIndex: fleet.toLowerCase(),
-            key: fleet.toLowerCase(),
-            render: (val: any) =>
-                val?.date ? (
-                    <div style={{ minHeight: 24, display: "flex", alignItems: "center" }}>
 
-                        <Tag style={{ backgroundColor: val.bg || "#d9d9d9", color: val.text || "#000", padding: "4px 8px", lineHeight: "1.5", display: "inline-block", }}>
-                            {val.date}
-                        </Tag>
-                    </div>
-                ) : (
-                    "-"
-                ),
-        })),
-    ];
+const recurrentChecks = crewReport
+  ? crewReport.recurrentChecks.trainings.map((t: any, idx: number) => ({
+      id: idx + 1,
+      training: t.training,
+      ...fleets.reduce((acc, fleet) => {
+        acc[fleet] = t.fleet === fleet 
+          ? { date: t.validUntil, bg: t.bgrColor, text: t.textColor }
+          : null;
+        return acc;
+      }, {} as any),
+    }))
+  : [];
+
+const checksColumns = [
+  { title: "Check", dataIndex: "training", key: "training" },
+  ...fleets.map((fleet) => ({
+    title: fleet,
+    dataIndex: fleet,
+    key: fleet,
+    render: (val: any) =>
+      val?.date ? (
+        <div >
+          <Tag
+            style={{
+              backgroundColor: val.bg || "#d9d9d9",
+              color: val.text || "#000",
+             
+            }}
+          >
+            {val.date}
+          </Tag>
+        </div>
+      ) : (
+        "-"
+      ),
+  })),
+];
+
 
     //  Recurrent Training
     const recurrentTraining = crewReport
