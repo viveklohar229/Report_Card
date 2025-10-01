@@ -149,23 +149,29 @@ export default function ReportCard() {
     ];
 
     //  Recurrent Checks
-const fleets = crewReport
+const fleets: string[] = crewReport
   ? Array.from(new Set(crewReport.recurrentChecks.trainings.map((t: any) => t.fleet)))
   : [];
 
 
+
 const recurrentChecks = crewReport
-  ? crewReport.recurrentChecks.trainings.map((t: any, idx: number) => ({
-      id: idx + 1,
-      training: t.training,
-      ...fleets.reduce((acc, fleet) => {
-        acc[fleet] = t.fleet === fleet 
+  ? crewReport.recurrentChecks.trainings.map((t: any, idx: number) => {
+      const fleetData = fleets.reduce<Record<string, any>>((acc, fleet) => {
+        acc[fleet] = t.fleet === fleet
           ? { date: t.validUntil, bg: t.bgrColor, text: t.textColor }
           : null;
         return acc;
-      }, {} as any),
-    }))
+      }, {});
+
+      return {
+        id: idx + 1,
+        training: t.training,
+        ...fleetData,
+      };
+    })
   : [];
+
 
 const checksColumns = [
   { title: "Check", dataIndex: "training", key: "training" },
@@ -180,7 +186,8 @@ const checksColumns = [
             style={{
               backgroundColor: val.bg || "#d9d9d9",
               color: val.text || "#000",
-             
+              padding: "4px 8px",
+              lineHeight: "1.5",
             }}
           >
             {val.date}
@@ -191,6 +198,7 @@ const checksColumns = [
       ),
   })),
 ];
+
 
 
     //  Recurrent Training
