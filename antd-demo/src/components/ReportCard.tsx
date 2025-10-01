@@ -149,55 +149,55 @@ export default function ReportCard() {
     ];
 
     //  Recurrent Checks
-const fleets: string[] = crewReport
-  ? Array.from(new Set(crewReport.recurrentChecks.trainings.map((t: any) => t.fleet)))
-  : [];
+    const fleets: string[] = crewReport
+        ? Array.from(new Set(crewReport.recurrentChecks.trainings.map((t: any) => t.fleet)))
+        : [];
 
 
 
-const recurrentChecks = crewReport
-  ? crewReport.recurrentChecks.trainings.map((t: any, idx: number) => {
-      const fleetData = fleets.reduce<Record<string, any>>((acc, fleet) => {
-        acc[fleet] = t.fleet === fleet
-          ? { date: t.validUntil, bg: t.bgrColor, text: t.textColor }
-          : null;
-        return acc;
-      }, {});
+    const recurrentChecks = crewReport
+        ? crewReport.recurrentChecks.trainings.map((t: any, idx: number) => {
+            const fleetData = fleets.reduce<Record<string, any>>((acc, fleet) => {
+                acc[fleet] = t.fleet === fleet
+                    ? { date: t.validUntil, bg: t.bgrColor, text: t.textColor }
+                    : null;
+                return acc;
+            }, {});
 
-      return {
-        id: idx + 1,
-        training: t.training,
-        ...fleetData,
-      };
-    })
-  : [];
+            return {
+                id: idx + 1,
+                training: t.training,
+                ...fleetData,
+            };
+        })
+        : [];
 
 
-const checksColumns = [
-  { title: "Check", dataIndex: "training", key: "training" },
-  ...fleets.map((fleet) => ({
-    title: fleet,
-    dataIndex: fleet,
-    key: fleet,
-    render: (val: any) =>
-      val?.date ? (
-        <div >
-          <Tag
-            style={{
-              backgroundColor: val.bg || "#d9d9d9",
-              color: val.text || "#000",
-              padding: "4px 8px",
-              lineHeight: "1.5",
-            }}
-          >
-            {val.date}
-          </Tag>
-        </div>
-      ) : (
-        "-"
-      ),
-  })),
-];
+    const checksColumns = [
+        { title: "Check", dataIndex: "training", key: "training" },
+        ...fleets.map((fleet) => ({
+            title: fleet,
+            dataIndex: fleet,
+            key: fleet,
+            render: (val: any) =>
+                val?.date ? (
+                    <div >
+                        <Tag
+                            style={{
+                                backgroundColor: val.bg || "#d9d9d9",
+                                color: val.text || "#000",
+                                padding: "4px 8px",
+                                lineHeight: "1.5",
+                            }}
+                        >
+                            {val.date}
+                        </Tag>
+                    </div>
+                ) : (
+                    "-"
+                ),
+        })),
+    ];
 
 
 
@@ -390,17 +390,23 @@ const checksColumns = [
                         <Card className="rounded-3xl shadow-2xl bg-white/50 border border-white/30 p-6"
                         //    bordered={false}
                         >
-                            <div style={{ display: "flex", gap: 20, alignItems: "flex-start" }}>
-                                <div style={{ flex: 2 }}>
-                                    <Title level={5}>Licence Details</Title>
-                                    <Table dataSource={licenceDetails} columns={licenceColumns} rowKey="id" pagination={false}
-                                     bordered 
-                                    />
-                                </div>
-                                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: 65 }}>
-                                    <QRCode.QRCodeCanvas value={JSON.stringify(licenceDetails)} size={80} />
-                                </div>
-                            </div>
+                            <div style={{ display: "flex", flexWrap: "wrap", gap: 20,alignItems: "flex-end", }}>
+  <div style={{ flex: "1 1 400px", minWidth: 200 }}>
+    <Title level={5}>Licence Details</Title>
+    <Table 
+        dataSource={licenceDetails} 
+        columns={licenceColumns} 
+        rowKey="id" 
+        pagination={false} 
+        bordered 
+        size="small"
+    />
+  </div>
+  <div style={{ display: "flex", flex: "0 0 100px", justifyContent: "center", alignItems: "flex-end" }}>
+    <QRCode.QRCodeCanvas value={JSON.stringify(licenceDetails)} size={80} />
+  </div>
+</div>
+
                         </Card>
 
                         {/* Checks */}
@@ -414,7 +420,7 @@ const checksColumns = [
                                 columns={checksColumns}
                                 rowKey="id"
                                 pagination={false}
-                                 bordered 
+                                bordered
                             />
                         </Card>
 
@@ -431,7 +437,7 @@ const checksColumns = [
                                 columns={trainingColumns}
                                 rowKey="id"
                                 pagination={false}
-                                 bordered 
+                                bordered
                             />
                         </Card>
 
