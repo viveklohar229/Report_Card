@@ -1,18 +1,21 @@
-import React, { useEffect, useState } from "react";
-import { Card, Avatar, Table, Tag, Typography, Select, Spin, Button } from "antd";
-import * as QRCode from "qrcode.react";
-import jsPDF from "jspdf";
+import { Avatar, Button, Card, QRCode, Select, Spin, Table, Tag, Typography } from "antd";
 import html2canvas from "html2canvas";
-import * as XLSX from "xlsx";
+import jsPDF from "jspdf";
+import { useEffect, useState } from "react";
+import { LoadingOutlined } from "@ant-design/icons";
+// import * as XLSX from "xlsx";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
+
+const antIcon = <LoadingOutlined style={{ fontSize: 16, color: "#fff" }} spin />;
 
 export default function ReportCard() {
     const [pilots, setPilots] = useState<{ id: string; name: string }[]>([]);
 
     const [selectedPilot, setSelectedPilot] = useState<string | undefined>();
     const [crewReport, setCrewReport] = useState<any>(null);
+    const [loadingPDF, setLoadingPDF] = useState(false);
 
     // Fetch pilots
     useEffect(() => {
@@ -53,100 +56,6 @@ export default function ReportCard() {
 
     const user = crewReport?.crewDetails || {};
 
-    //  License details
-    const licenceDetails = crewReport
-        ? [
-            {
-                id: 1,
-                type: user.license,
-                licenseValidity: {
-                    date: user.licenseValidity,
-                    bg: user.licenseBgColor,
-                    text: user.licenseTextColor,
-                },
-                medical: {
-                    date: user.medicalExpiry,
-                    bg: user.medicalBgColor,
-                    text: user.medicalTextColor,
-                },
-                rtr: {
-                    date: user.rtrValidity,
-                    bg: user.rtrBgColor,
-                    text: user.rtrTextColor,
-                },
-                frtol: {
-                    date: user.frtolValidity,
-                    bg: user.frtolBgColor,
-                    text: user.frtolTextColor,
-                },
-            },
-        ]
-        : [];
-
-    const licenceColumns = [
-        { title: "License Type & Number", dataIndex: "type", key: "type" },
-        {
-            title: "License Validity",
-            dataIndex: "licenseValidity",
-            key: "licenseValidity",
-            render: (val: any) =>
-                val?.date ? (
-                    <div style={{ minHeight: 24, display: "flex", alignItems: "center" }}>
-                        <Tag style={{ backgroundColor: val.bg || "#d9d9d9", color: val.text || "#000", padding: "4px 8px", lineHeight: "1.5", display: "inline-block", }}>
-                            {val.date}
-                        </Tag>
-                    </div>
-                ) : (
-                    "-"
-                ),
-        },
-        {
-            title: "Class 1 Medical",
-            dataIndex: "medical",
-            key: "medical",
-            render: (val: any) =>
-                val?.date ? (
-                    <div style={{ minHeight: 24, display: "flex", alignItems: "center" }}>
-                        <Tag style={{ backgroundColor: val.bg || "#d9d9d9", color: val.text || "#000", padding: "4px 8px", lineHeight: "1.5", display: "inline-block", }}>
-                            {val.date}
-                        </Tag>
-                    </div>
-                ) : (
-                    "-"
-                ),
-        },
-        {
-            title: "RTR",
-            dataIndex: "rtr",
-            key: "rtr",
-            render: (val: any) =>
-                val?.date ? (
-                    <div style={{ minHeight: 24, display: "flex", alignItems: "center" }}>
-                        <Tag style={{ backgroundColor: val.bg || "#d9d9d9", color: val.text || "#000", padding: "4px 8px", lineHeight: "1.5", display: "inline-block", }}>
-                            {val.date}
-                        </Tag>
-                    </div>
-                ) : (
-                    "-"
-                ),
-        },
-        {
-            title: "FRTOL",
-            dataIndex: "frtol",
-            key: "frtol",
-            render: (val: any) =>
-                val?.date ? (
-                    <div style={{ minHeight: 24, display: "flex", alignItems: "center" }}>
-
-                        <Tag style={{ backgroundColor: val.bg || "#d9d9d9", color: val.text || "#000", padding: "4px 8px", lineHeight: "1.5", display: "inline-block", }}>
-                            {val.date}
-                        </Tag>
-                    </div>
-                ) : (
-                    "-"
-                ),
-        },
-    ];
 
     //  Recurrent Checks
     const fleets: string[] = crewReport
@@ -167,32 +76,36 @@ export default function ReportCard() {
             return {
                 id: idx + 1,
                 training: t.training,
+                doneOn: t.doneOn,
                 ...fleetData,
             };
         })
         : [];
 
-
     const checksColumns = [
-        { title: "Check", dataIndex: "training", key: "training" },
+        { title: "Training", dataIndex: "training", key: "training" },
+        {
+            title: "Done On",
+            dataIndex: "doneOn",
+            key: "doneOn",
+            render: (val: any) => val ? (
+                <Tag >{val}</Tag>
+            ) : "-"
+        },
         ...fleets.map((fleet) => ({
             title: fleet,
             dataIndex: fleet,
             key: fleet,
             render: (val: any) =>
                 val?.date ? (
-                    <div >
-                        <Tag
-                            style={{
-                                backgroundColor: val.bg || "#d9d9d9",
-                                color: val.text || "#000",
-                                padding: "4px 8px",
-                                lineHeight: "1.5",
-                            }}
-                        >
-                            {val.date}
-                        </Tag>
-                    </div>
+                    <Tag
+                        style={{
+                            backgroundColor: val.bg || "",
+                            color: val.text || "#000",
+                        }}
+                    >
+                        {val.date}
+                    </Tag>
                 ) : (
                     "-"
                 ),
@@ -201,11 +114,14 @@ export default function ReportCard() {
 
 
 
+
+
     //  Recurrent Training
     const recurrentTraining = crewReport
         ? crewReport.recurrentTraining.trainings.map((t: any) => ({
             id: t.id,
             training: t.training,
+            doneOn: t.doneOn,
             date: t.validUntil,
             bg: t.bgrColor,
             text: t.textColor,
@@ -215,83 +131,104 @@ export default function ReportCard() {
     const trainingColumns = [
         { title: "Training", dataIndex: "training", key: "training" },
         {
-            title: "Date",
+            title: "Done On",
+            dataIndex: "doneOn",
+            key: "doneOn",
+            render: (val: any) =>
+                val ? (
+                    <Tag>{val}</Tag>
+                ) : "-",
+        },
+        {
+            title: crewReport?.recurrentTraining.trainings[0]?.validUntil
+                ? "Valid Until"
+                : "",
             dataIndex: "date",
             key: "date",
             render: (_: any, record: any) =>
                 record.date ? (
-                    <div style={{ minHeight: 24, display: "flex", alignItems: "center" }}>
-
-                        <Tag style={{ backgroundColor: record.bg || "#d9d9d9", color: record.text || "#000", padding: "4px 8px", lineHeight: "1.5", display: "inline-block", }}>
-                            {record.date}
-                        </Tag>
-                    </div>
-                ) : (
-                    "-"
-                ),
+                    <Tag
+                        style={{
+                            backgroundColor: record.bg || "",
+                            color: record.text || "#000",
+                        }}
+                    >
+                        {record.date}
+                    </Tag>
+                ) : "-",
         },
     ];
+
+
+
+
 
     const handleDownloadPDF = async () => {
         const element = document.getElementById("pilot-records");
         if (!element) return;
+        setLoadingPDF(true);
 
+
+        
         const canvas = await html2canvas(element, {
-            scale: 2,
+            scale: 3,
             useCORS: true,
-            allowTaint: true,
         });
 
         const imgData = canvas.toDataURL("image/png");
-        const pdf = new jsPDF("p", "pt", "a4");
+        const pdf = new jsPDF("p", "pt", "a4"); 
         const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+        const pdfHeight = pdf.internal.pageSize.getHeight();
 
-        let heightLeft = pdfHeight;
+        const imgWidth = pdfWidth;
+        const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+
+        let heightLeft = imgHeight;
         let position = 0;
 
-        pdf.addImage(imgData, "PNG", 0, position, pdfWidth, pdfHeight);
-        heightLeft -= pdf.internal.pageSize.getHeight();
-
+        
         while (heightLeft > 0) {
-            position = heightLeft - pdfHeight;
-            pdf.addPage();
-            pdf.addImage(imgData, "PNG", 0, position, pdfWidth, pdfHeight);
-            heightLeft -= pdf.internal.pageSize.getHeight();
+            pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+            heightLeft -= pdfHeight;
+            position -= pdfHeight; 
+            if (heightLeft > 0) pdf.addPage();
         }
 
         pdf.save("Pilot_Records.pdf");
+        setLoadingPDF(false);
     };
 
 
 
 
-    const downloadExcel = () => {
-        if (!crewReport) return;
 
-        // Example: Export crewDetails + trainings
-        const wb = XLSX.utils.book_new();
 
-        // 1. Crew Details
-        const crewSheet = XLSX.utils.json_to_sheet([crewReport.crewDetails]);
-        XLSX.utils.book_append_sheet(wb, crewSheet, "Crew Details");
+    // const downloadExcel = () => {
+    //     if (!crewReport) return;
 
-        // 2. Recurrent Checks
-        const checksSheet = XLSX.utils.json_to_sheet(crewReport.recurrentChecks.trainings);
-        XLSX.utils.book_append_sheet(wb, checksSheet, "Recurrent Checks");
+    //     // Example: Export crewDetails + trainings
+    //     const wb = XLSX.utils.book_new();
 
-        // 3. Recurrent Training
-        const trainingSheet = XLSX.utils.json_to_sheet(crewReport.recurrentTraining.trainings);
-        XLSX.utils.book_append_sheet(wb, trainingSheet, "Recurrent Training");
+    //     // 1. Crew Details
+    //     const crewSheet = XLSX.utils.json_to_sheet([crewReport.crewDetails]);
+    //     XLSX.utils.book_append_sheet(wb, crewSheet, "Crew Details");
 
-        XLSX.writeFile(wb, "pilot_training_records.xlsx");
-    };
+    //     // 2. Recurrent Checks
+    //     const checksSheet = XLSX.utils.json_to_sheet(crewReport.recurrentChecks.trainings);
+    //     XLSX.utils.book_append_sheet(wb, checksSheet, "Recurrent Checks");
+
+    //     // 3. Recurrent Training
+    //     const trainingSheet = XLSX.utils.json_to_sheet(crewReport.recurrentTraining.trainings);
+    //     XLSX.utils.book_append_sheet(wb, trainingSheet, "Recurrent Training");
+
+    //     XLSX.writeFile(wb, "pilot_training_records.xlsx");
+    // };
 
 
     return (
         <div className="p-8 min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
             {/* Header */}
-            <Card className="rounded-3xl shadow-2xl bg-white/40 border border-white/30"
+            <Card className="rounded-3xl shadow-2xl bg-white/40 border border-white/30 "
             //   bordered={false}
             >
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -327,7 +264,7 @@ export default function ReportCard() {
                     {/*  Right side buttons */}
                     <div style={{ display: "flex", gap: 10 }}>
                         <Button type="primary" onClick={handleDownloadPDF}>
-                            Download PDF
+                            {loadingPDF ? <Spin indicator={antIcon} /> : "Download PDF"}
                         </Button>
                         {/* <Button type="default" onClick={downloadExcel}>
                             Download Excel
@@ -338,81 +275,172 @@ export default function ReportCard() {
 
 
             {/* Layout */}
-            <div id="pilot-records">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-6">
-                    {/* Personal Details */}
-                    <Card
-                        className="rounded-3xl shadow-2xl bg-white/50 border border-white/30 p-6"
-                    //   bordered={false}
-                    >
-                        <div className="flex flex-col items-center gap-2 mb-4">
-                            <Avatar
-                                size={112}
-                                src={user.photoUrl || "/demo_small.png"}
-                                style={{
-                                    border: "3px solid #1890ff",
-                                }}
-                            />
-                            <Title level={4} style={{ margin: 0 }}>
-                                {user.crewName}
-                            </Title>
-                            <Text type="secondary">
-                                {user.role} • {user.employeCode}
-                            </Text>
-                        </div>
+            <div id="pilot-records" style={{ padding: 16, background: "#f0f2f5" }}>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-6 items-start">
 
-                        <Table
-                            dataSource={[
-                                { key: "1", field: "Phone", value: user.contactNo },
-                                { key: "2", field: "Email", value: user.emailId },
-                                { key: "3", field: "DOB", value: user.dateOfBirth },
-                                { key: "4", field: "License", value: user.license },
-                            ]}
-                            columns={[
-                                {
-                                    title: "Field",
-                                    dataIndex: "field",
-                                    key: "field",
-                                    render: (text) => <Text strong>{text}</Text>,
-                                },
-                                { title: "Details", dataIndex: "value", key: "value" },
-                            ]}
-                            pagination={false}
-                            bordered
-                            size="small"
-                        />
+                    {/*  Personal Details + License + Medical Reports */}
+                    <Card className="rounded-3xl shadow-2xl bg-white/50 border border-white/30 p-6 " style={{ height: "auto" }}>
+                        <div className="flex flex-col gap-6">
+
+                            {/* 1. Personal Details */}
+                            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+                                {/* Avatar */}
+                                <Avatar
+                                    size={112}
+                                    src={user.profileImagePath || "/demo_small.png"}
+                                    style={{ border: "3px solid #1890ff" }}
+                                />
+
+                                {/* Name */}
+                                <Title level={4} style={{ margin: 0 }}>
+                                    {user.crewName}
+                                </Title>
+
+                                {/* Role & QR code  */}
+                                <div style={{ display: "flex", alignItems: "center", width: "100%", justifyContent: "center", position: "relative" }}>
+                                    <Text type="secondary">{user.role}</Text>
+
+                                    {user.license && (
+                                        <div style={{ position: "absolute", right: 0 }}>
+                                            <QRCode
+                                                value={JSON.stringify({
+                                                    license: user.license,
+                                                    licenseValidity: user.licenseValidity,
+                                                    medicalExpiry: user.medicalExpiry,
+                                                    rtrValidity: user.rtrValidity,
+                                                    frtolValidity: user.frtolValidity,
+                                                })}
+                                                size={80}
+                                            />
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+
+
+
+                            <div>
+                                <Title level={5}>Personal Details</Title>
+                                <Table
+                                    dataSource={[
+                                        { key: "1", Item: "Abbreviation", value: user.abbreviation },
+                                        { key: "1", Item: "Phone", value: user.contactNo },
+                                        { key: "2", Item: "Email", value: user.emailId },
+                                        { key: "3", Item: "DOB", value: user.dateOfBirth },
+                                        { key: "3", Item: "Employee ID", value: user.employeCode },
+                                        { key: "3", Item: "Date of Joining", value: user.dateOfJoining },
+                                        { key: "3", Item: "PMR File No", value: user.pmrFileNo },
+                                        { key: "3", Item: "eGCA ID", value: user.egcaId },
+                                        { key: "3", Item: "Type Endorsed", value: user.typeEndorsed },
+                                        { key: "3", Item: "Current Type Flying", value: user.currentTypeFlying },
+                                        { key: "3", Item: "Address", value: user.homeBase },
+                                    ]}
+                                    columns={[
+                                        { title: "Item", dataIndex: "Item", key: "Item", render: text => <Text strong>{text}</Text> },
+                                        { title: "Details", dataIndex: "value", key: "value" },
+                                    ]}
+                                    pagination={false}
+                                    bordered
+                                    size="small"
+                                />
+                            </div>
+
+
+                            {/*  License Details */}
+
+
+
+
+                            <div>
+                                <Title level={5}>License Details</Title>
+                                <Table
+                                    dataSource={[
+                                        { key: "1", Item: "License Type & Number", value: user.license },
+                                        { key: "2", Item: "License Validity", value: user.licenseValidity },
+                                        { key: "3", Item: "Class 1 Medical", value: user.medicalExpiry },
+                                        { key: "4", Item: "RTR Number", value: user.rtrNumber },
+                                        { key: "4", Item: "RTR Validity ", value: user.rtrValidity },
+                                        { key: "5", Item: "FRTOL  Number ", value: user.frtolNumber },
+                                        { key: "5", Item: "FRTOL Validity ", value: user.frtolValidity },
+                                    ]}
+                                    columns={[
+                                        {
+                                            title: "Item",
+                                            dataIndex: "Item",
+                                            key: "Item",
+                                            render: (text) => <Text strong>{text}</Text>,
+                                        },
+                                        {
+                                            title: "Details",
+                                            dataIndex: "value",
+                                            key: "value",
+                                        },
+                                    ]}
+                                    pagination={false}
+                                    bordered
+                                    size="small"
+                                />
+
+
+
+                            </div>
+
+
+
+
+
+                            {/*  Medical Reports */}
+                            <div>
+                                <Title level={5}>Medical Reports</Title>
+
+                                <Table
+                                    dataSource={[
+                                        { key: "1", Item: "Medical Done on", value: "01-09-25" },
+                                    ]}
+                                    columns={[
+                                        { title: "Item", dataIndex: "Item", key: "Item", render: text => <Text strong>{text}</Text> },
+                                        { title: "Valid Till", dataIndex: "value", key: "value" },
+                                    ]}
+                                    pagination={false}
+                                    bordered
+                                    size="small"
+                                    style={{ marginBottom: 16 }}
+                                />
+
+                                {/* English Proficiency */}
+                                <Title level={5}>English Proficiency </Title>
+                                <Table
+                                    dataSource={[
+                                        { key: "1", level: user.epLevel, value: user.epDate },
+                                    ]}
+                                    columns={[
+                                        { title: "Level", dataIndex: "level", key: "level", render: text => <Text strong>{text}</Text> },
+                                        { title: "Valid Till", dataIndex: "value", key: "value" },
+                                    ]}
+                                    pagination={false}
+                                    bordered
+                                    size="small"
+                                />
+                            </div>
+
+
+
+
+                        </div>
                     </Card>
 
 
-                    {/* License + Checks + Training */}
-                    <div className="lg:col-span-2 space-y-6">
-                        {/* License */}
-                        <Card className="rounded-3xl shadow-2xl bg-white/50 border border-white/30 p-6"
-                        //    bordered={false}
-                        >
-                            <div style={{ display: "flex", flexWrap: "wrap", gap: 20,alignItems: "flex-end", }}>
-  <div style={{ flex: "1 1 400px", minWidth: 200 }}>
-    <Title level={5}>Licence Details</Title>
-    <Table 
-        dataSource={licenceDetails} 
-        columns={licenceColumns} 
-        rowKey="id" 
-        pagination={false} 
-        bordered 
-        size="small"
-    />
-  </div>
-  <div style={{ display: "flex", flex: "0 0 100px", justifyContent: "center", alignItems: "flex-end" }}>
-    <QRCode.QRCodeCanvas value={JSON.stringify(licenceDetails)} size={80} />
-  </div>
-</div>
 
-                        </Card>
+
+                    { /* Checks + Training */}
+                    <div className="lg:col-span-2 space-y-6 flex flex-col gap-6 ">
+
 
                         {/* Checks */}
-                        <Card className="rounded-3xl shadow-2xl bg-white/50 border border-white/30 p-6">
+                        <Card className="rounded-3xl shadow-2xl bg-white/50 border border-white/30 p-6 ">
                             <div style={{ marginBottom: 16 }}>
-                                <Title level={5}>Recurrent Checks Records</Title>
+                                <Title level={5}>Recurrent Checks </Title>
                             </div>
 
                             <Table
@@ -421,6 +449,7 @@ export default function ReportCard() {
                                 rowKey="id"
                                 pagination={false}
                                 bordered
+                                size="small"
                             />
                         </Card>
 
@@ -429,7 +458,7 @@ export default function ReportCard() {
 
                         <Card className="rounded-3xl shadow-2xl bg-white/50 border border-white/30 p-6">
                             <div style={{ marginBottom: 16 }}>
-                                <Title level={5}>Recurrent Training Records</Title>
+                                <Title level={5}>Recurrent Training </Title>
                             </div>
 
                             <Table
@@ -438,6 +467,7 @@ export default function ReportCard() {
                                 rowKey="id"
                                 pagination={false}
                                 bordered
+                                size="small"
                             />
                         </Card>
 
