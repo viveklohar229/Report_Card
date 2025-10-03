@@ -57,105 +57,105 @@ export default function ReportCard() {
     const user = crewReport?.crewDetails || {};
 
 
-const fleets: string[] = crewReport
-  ? Array.from(new Set(crewReport.recurrentChecks.trainings.map((t: any) => t.fleet)))
-  : [];
+    const fleets: string[] = crewReport
+        ? Array.from(new Set(crewReport.recurrentChecks.trainings.map((t: any) => t.fleet)))
+        : [];
 
-const trainingsMap: Record<string, any[]> = {};
-crewReport?.recurrentChecks.trainings.forEach((t: any) => {
-  if (!trainingsMap[t.training]) trainingsMap[t.training] = [];
-  trainingsMap[t.training].push(t);
-});
+    const trainingsMap: Record<string, any[]> = {};
+    crewReport?.recurrentChecks.trainings.forEach((t: any) => {
+        if (!trainingsMap[t.training]) trainingsMap[t.training] = [];
+        trainingsMap[t.training].push(t);
+    });
 
-const recurrentChecks = Object.keys(trainingsMap).map((trainingName, idx) => {
-  const row: Record<string, any> = { id: idx + 1, training: trainingName };
-  
-  fleets.forEach(fleet => {
-    const fleetTraining = trainingsMap[trainingName].find(t => t.fleet === fleet);
-    row[fleet] = fleetTraining
-      ? { doneOn: fleetTraining.doneOn, validTill: fleetTraining.validUntil, bg: fleetTraining.bgrColor, text: fleetTraining.textColor }
-      : null;
-  });
+    const recurrentChecks = Object.keys(trainingsMap).map((trainingName, idx) => {
+        const row: Record<string, any> = { id: idx + 1, training: trainingName };
 
-  return row;
-});
+        fleets.forEach(fleet => {
+            const fleetTraining = trainingsMap[trainingName].find(t => t.fleet === fleet);
+            row[fleet] = fleetTraining
+                ? { doneOn: fleetTraining.doneOn, validTill: fleetTraining.validUntil, bg: fleetTraining.bgrColor, text: fleetTraining.textColor }
+                : null;
+        });
 
-const checksColumns = [
-  { title: "Training", dataIndex: "training", key: "training" },
-  ...fleets.flatMap(fleet => ([
-    { 
-      title: fleet, 
-      children: [
-        {
-          title: "Done On",
-          dataIndex: [fleet, "doneOn"],
-          key: `${fleet}-doneOn`,
-           align: "center",
-          render: (val: any, record: any) => val ? <Tag style={{ backgroundColor: record[fleet]?.bg || "", color: record[fleet]?.text || "#000" }}>{val}</Tag> : "-"
-        },
-        {
-          title: "Valid Till",
-          dataIndex: [fleet, "validTill"],
-          key: `${fleet}-validTill`,
-           align: "center",
-          render: (val: any, record: any) => val ? <Tag style={{ backgroundColor: record[fleet]?.bg || "", color: record[fleet]?.text || "#000" }}>{val}</Tag> : "-"
-        }
-      ]
-    }
-  ]))
-];
+        return row;
+    });
 
-
+    const checksColumns = [
+        { title: "Training", dataIndex: "training", key: "training" },
+        ...fleets.flatMap(fleet => ([
+            {
+                title: fleet,
+                children: [
+                    {
+                        title: "Done On",
+                        dataIndex: [fleet, "doneOn"],
+                        key: `${fleet}-doneOn`,
+                        align: "center",
+                        render: (val: any, record: any) => val ? <Tag style={{ backgroundColor: record[fleet]?.bg || "", color: record[fleet]?.text || "#000" }}>{val}</Tag> : "-"
+                    },
+                    {
+                        title: "Valid Till",
+                        dataIndex: [fleet, "validTill"],
+                        key: `${fleet}-validTill`,
+                        align: "center",
+                        render: (val: any, record: any) => val ? <Tag style={{ backgroundColor: record[fleet]?.bg || "", color: record[fleet]?.text || "#000" }}>{val}</Tag> : "-"
+                    }
+                ]
+            }
+        ]))
+    ];
 
 
-  
-const trainingFleets: string[] = crewReport
-  ? Array.from(new Set(crewReport.recurrentTraining.trainings.map((t: any) => t.fleet)))
-  : [];
 
-const trainingMap: Record<string, any[]> = {};
-crewReport?.recurrentTraining.trainings.forEach((t: any) => {
-  if (!trainingMap[t.training]) trainingMap[t.training] = [];
-  trainingMap[t.training].push(t);
-});
 
-const recurrentTraining = Object.keys(trainingMap).map((trainingName, idx) => {
-  const row: Record<string, any> = { id: idx + 1, training: trainingName };
 
-  trainingFleets.forEach(fleet => {
-    const fleetTraining = trainingMap[trainingName].find(t => t.fleet === fleet);
-    row[fleet] = fleetTraining
-      ? { doneOn: fleetTraining.doneOn, validTill: fleetTraining.validUntil, bg: fleetTraining.bgrColor, text: fleetTraining.textColor }
-      : null;
-  });
+    const trainingFleets: string[] = crewReport
+        ? Array.from(new Set(crewReport.recurrentTraining.trainings.map((t: any) => t.fleet)))
+        : [];
 
-  return row;
-});
+    const trainingMap: Record<string, any[]> = {};
+    crewReport?.recurrentTraining.trainings.forEach((t: any) => {
+        if (!trainingMap[t.training]) trainingMap[t.training] = [];
+        trainingMap[t.training].push(t);
+    });
 
-const trainingColumns = [
-  { title: "Training", dataIndex: "training", key: "training" },
-  ...trainingFleets.flatMap(fleet => ([
-    {
-      title: fleet,
-      children: [
-        {
-          title: "Done On",
-          dataIndex: [fleet, "doneOn"],
-          key: `${fleet}-doneOn`,
-           align: "center",
-          render: (val: any, record: any) => val ? <Tag style={{ backgroundColor: record[fleet]?.bg || "", color: record[fleet]?.text || "#000" }}>{val}</Tag> : "-"
-        },
-        {
-          title: "Valid Till",
-          dataIndex: [fleet, "validTill"],
-          key: `${fleet}-validTill`,
-           align: "center",
-          render: (val: any, record: any) => val ? <Tag style={{ backgroundColor: record[fleet]?.bg || "", color: record[fleet]?.text || "#000" }}>{val}</Tag> : "-"
-        }
-      ]
-    }
-  ]))
-];
+    const recurrentTraining = Object.keys(trainingMap).map((trainingName, idx) => {
+        const row: Record<string, any> = { id: idx + 1, training: trainingName };
+
+        trainingFleets.forEach(fleet => {
+            const fleetTraining = trainingMap[trainingName].find(t => t.fleet === fleet);
+            row[fleet] = fleetTraining
+                ? { doneOn: fleetTraining.doneOn, validTill: fleetTraining.validUntil, bg: fleetTraining.bgrColor, text: fleetTraining.textColor }
+                : null;
+        });
+
+        return row;
+    });
+
+    const trainingColumns = [
+        { title: "Training", dataIndex: "training", key: "training" },
+        ...trainingFleets.flatMap(fleet => ([
+            {
+                title: fleet,
+                children: [
+                    {
+                        title: "Done On",
+                        dataIndex: [fleet, "doneOn"],
+                        key: `${fleet}-doneOn`,
+                        align: "center",
+                        render: (val: any, record: any) => val ? <Tag style={{ backgroundColor: record[fleet]?.bg || "", color: record[fleet]?.text || "#000" }}>{val}</Tag> : "-"
+                    },
+                    {
+                        title: "Valid Till",
+                        dataIndex: [fleet, "validTill"],
+                        key: `${fleet}-validTill`,
+                        align: "center",
+                        render: (val: any, record: any) => val ? <Tag style={{ backgroundColor: record[fleet]?.bg || "", color: record[fleet]?.text || "#000" }}>{val}</Tag> : "-"
+                    }
+                ]
+            }
+        ]))
+    ];
 
 
 
@@ -166,14 +166,14 @@ const trainingColumns = [
         setLoadingPDF(true);
 
 
-        
+
         const canvas = await html2canvas(element, {
             scale: 3,
             useCORS: true,
         });
 
         const imgData = canvas.toDataURL("image/png");
-        const pdf = new jsPDF("p", "pt", "a4"); 
+        const pdf = new jsPDF("p", "pt", "a4");
         const pdfWidth = pdf.internal.pageSize.getWidth();
         const pdfHeight = pdf.internal.pageSize.getHeight();
 
@@ -183,11 +183,11 @@ const trainingColumns = [
         let heightLeft = imgHeight;
         let position = 0;
 
-        
+
         while (heightLeft > 0) {
             pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
             heightLeft -= pdfHeight;
-            position -= pdfHeight; 
+            position -= pdfHeight;
             if (heightLeft > 0) pdf.addPage();
         }
 
@@ -223,7 +223,7 @@ const trainingColumns = [
 
 
     return (
-        <div className="p-8 min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+        <div className=" min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
             {/* Header */}
             <Card className="rounded-3xl shadow-2xl bg-white/40 border border-white/30 "
             //   bordered={false}
@@ -238,9 +238,9 @@ const trainingColumns = [
                             onChange={(value) => setSelectedPilot(value)}
                             showSearch
                             optionFilterProp="label"
-                            filterOption={(input, option) =>
-                                (option?.label ?? "").toLowerCase().includes(input.toLowerCase())
-                            }
+                        // filterOption={(input, option) =>
+                        //     (option?.label ?? "").toLowerCase().includes(input.toLowerCase())
+                        // }
                         >
                             {pilots.map((pilot) => (
                                 <Option key={pilot.id} value={pilot.id} label={pilot.name}>
@@ -273,10 +273,10 @@ const trainingColumns = [
 
             {/* Layout */}
             <div id="pilot-records">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-6 items-start">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 mt-2 items-start">
 
                     {/*  Personal Details + License + Medical Reports */}
-                    <Card className="rounded-3xl shadow-2xl bg-white/50 border border-white/30 p-6 " style={{ height: "auto" }}>
+                    <Card className="rounded-3xl shadow-2xl bg-white/50 border border-white/30  " >
                         <div className="flex flex-col gap-6">
 
                             {/* 1. Personal Details */}
@@ -314,11 +314,8 @@ const trainingColumns = [
                                 </div>
                             </div>
 
-
-
-
                             <div>
-                                <Title level={5}>Personal Details</Title>
+                                <Title level={5} style={{ margin: "8px 0" }} >Personal Details</Title>
                                 <Table
                                     dataSource={[
                                         // { key: "1", Item: "Abbreviation", value: user.abbreviation },
@@ -350,34 +347,53 @@ const trainingColumns = [
 
 
                             <div>
-                                <Title level={5}>License Details</Title>
+                                <Title level={5} style={{ margin: "8px 0" }}>License Details</Title>
                                 <Table
                                     dataSource={[
-                                        { key: "1", Item: "License Type & Number", value: user.license },
-                                        { key: "2", Item: "License Validity", value: user.licenseValidity },
-                                        { key: "3", Item: "Class 1 Medical", value: user.medicalExpiry },
-                                        { key: "4", Item: "RTR Number", value: user.rtrNumber },
-                                        { key: "5", Item: "RTR Validity ", value: user.rtrValidity },
-                                        { key: "6", Item: "FRTOL  Number ", value: user.frtolNumber },
-                                        { key: "7", Item: "FRTOL Validity ", value: user.frtolValidity },
+                                        {
+                                            key: "1",
+                                            type: "License",
+                                            number: user.license,
+                                            validity: user.licenseValidity,
+                                        },
+                                        {
+                                            key: "2",
+                                            type: "RTR",
+                                            number: user.rtrNumber,
+                                            validity: user.rtrValidity,
+                                        },
+                                        {
+                                            key: "3",
+                                            type: "FRTOL",
+                                            number: user.frtolNumber,
+                                            validity: user.frtolValidity,
+                                        },
                                     ]}
                                     columns={[
                                         {
-                                            title: "Item",
-                                            dataIndex: "Item",
-                                            key: "Item",
+                                            title: "License Type",
+                                            dataIndex: "type",
+                                            key: "type",
                                             render: (text) => <Text strong>{text}</Text>,
                                         },
                                         {
-                                            title: "Details",
-                                            dataIndex: "value",
-                                            key: "value",
+                                            title: "Number",
+                                            dataIndex: "number",
+                                            key: "number",
+                                            align: "center",
+                                        },
+                                        {
+                                            title: "Validity",
+                                            dataIndex: "validity",
+                                            key: "validity",
+                                            align: "center",
                                         },
                                     ]}
                                     pagination={false}
                                     bordered
                                     size="small"
                                 />
+
 
 
 
@@ -431,12 +447,12 @@ const trainingColumns = [
 
 
                     { /* Checks + Training */}
-                    <div className="lg:col-span-2 space-y-6 flex flex-col gap-6 ">
+                    <div className="lg:col-span-2  flex flex-col gap-2 ">
 
 
                         {/* Checks */}
-                        <Card className="rounded-3xl shadow-2xl bg-white/50 border border-white/30 p-6 ">
-                            <div style={{ marginBottom: 16 }}>
+                        <Card className="rounded-3xl shadow-2xl bg-white/50 border border-white/30 ">
+                            <div >
                                 <Title level={5}>Recurrent Checks </Title>
                             </div>
 
@@ -453,8 +469,8 @@ const trainingColumns = [
 
                         {/* Training */}
 
-                        <Card className="rounded-3xl shadow-2xl bg-white/50 border border-white/30 p-6">
-                            <div style={{ marginBottom: 16 }}>
+                        <Card className="rounded-3xl shadow-2xl bg-white/50 border border-white/30 ">
+                            <div >
                                 <Title level={5}>Recurrent Training </Title>
                             </div>
 
