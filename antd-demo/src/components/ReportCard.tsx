@@ -157,43 +157,72 @@ export default function ReportCard() {
         ]))
     ];
 
-
+    const getBase64Image = async (url: string) => {
+        try {
+            const res = await fetch(url, { mode: "cors" });
+            const blob = await res.blob();
+            return await new Promise<string>((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result as string);
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+            });
+        } catch (err) {
+            console.warn("Image could not be loaded, using placeholder:", err);
+            return null; 
+        }
+    };
 
 
     const handleDownloadPDF = async () => {
         const element = document.getElementById("pilot-records");
         if (!element) return;
-        setLoadingPDF(true);
 
+        setLoadingPDF(true); 
 
+        try {
+            let profileBase64 = null;
+            const profilePath = crewReport?.crewDetails?.profileImagePath;
+            if (profilePath) {
+                profileBase64 = await getBase64Image(profilePath);
+            }
 
-        const canvas = await html2canvas(element, {
-            scale: 3,
-            useCORS: true,
-        });
+            const canvas = await html2canvas(element, {
+                scale: 3,
+                useCORS: true,
+            });
+            const imgData = canvas.toDataURL("image/png");
 
-        const imgData = canvas.toDataURL("image/png");
-        const pdf = new jsPDF("p", "pt", "a4");
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = pdf.internal.pageSize.getHeight();
+            const pdf = new jsPDF("p", "pt", "a4");
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = pdf.internal.pageSize.getHeight();
 
-        const imgWidth = pdfWidth;
-        const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+            const imgWidth = pdfWidth;
+            const imgHeight = (canvas.height * pdfWidth) / canvas.width;
 
-        let heightLeft = imgHeight;
-        let position = 0;
+            let heightLeft = imgHeight;
+            let position = 0;
 
+            while (heightLeft > 0) {
+                pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+                heightLeft -= pdfHeight;
+                position -= pdfHeight;
+                if (heightLeft > 0) pdf.addPage();
+            }
 
-        while (heightLeft > 0) {
-            pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-            heightLeft -= pdfHeight;
-            position -= pdfHeight;
-            if (heightLeft > 0) pdf.addPage();
+            if (profileBase64) {
+                pdf.addImage(profileBase64, "PNG", 40, 40, 100, 100); 
+            }
+
+            pdf.save("Pilot_Records.pdf");
+        } catch (err) {
+            console.error("Error generating PDF:", err);
+        } finally {
+            setLoadingPDF(false); 
         }
-
-        pdf.save("Pilot_Records.pdf");
-        setLoadingPDF(false);
     };
+
+
 
 
 
@@ -260,9 +289,16 @@ export default function ReportCard() {
 
                     {/*  Right side buttons */}
                     <div style={{ display: "flex", gap: 10 }}>
-                        <Button type="primary" onClick={handleDownloadPDF}>
-                            {loadingPDF ? <Spin indicator={antIcon} /> : "Download PDF"}
+                        <Button
+                            type="primary"
+                            onClick={handleDownloadPDF}
+                            disabled={loadingPDF}
+                            style={{ display: "flex", alignItems: "center", gap: 8 }}
+                        >
+                            {loadingPDF && <Spin indicator={antIcon} />}
+                            {loadingPDF ? "Downloading..." : "Download PDF"}
                         </Button>
+
                         {/* <Button type="default" onClick={downloadExcel}>
                             Download Excel
                         </Button> */}
@@ -277,7 +313,7 @@ export default function ReportCard() {
 
                     {/*  Personal Details + License + Medical Reports */}
                     <Card className="rounded-3xl shadow-2xl bg-white/50 border border-white/30  " >
-                        <div className="flex flex-col gap-6">
+                        <div className="flex flex-col ">
 
                             {/* 1. Personal Details */}
                             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
@@ -297,7 +333,7 @@ export default function ReportCard() {
                                 <div style={{ display: "flex", alignItems: "center", width: "100%", justifyContent: "center", position: "relative" }}>
                                     <Text type="secondary">{user.role}</Text>
 
-                                    {(user.license || user.licenseValidity ) && (
+                                    {(user.license || user.licenseValidity) && (
                                         <div style={{ position: "absolute", right: 0 }}>
                                             <QRCode
                                                 value={JSON.stringify({
