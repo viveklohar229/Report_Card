@@ -297,7 +297,7 @@ export default function ReportCard() {
                                 <div style={{ display: "flex", alignItems: "center", width: "100%", justifyContent: "center", position: "relative" }}>
                                     <Text type="secondary">{user.role}</Text>
 
-                                    {user.license && (
+                                    {(user.license || user.licenseValidity ) && (
                                         <div style={{ position: "absolute", right: 0 }}>
                                             <QRCode
                                                 value={JSON.stringify({
