@@ -81,7 +81,7 @@ export default function ReportCard() {
     });
 
     const checksColumns = [
-        { title: "Training", dataIndex: "training", key: "training" },
+        { title: "Training", dataIndex: "training", key: "training",width: 180},
         ...fleets.flatMap(fleet => ([
             {
                 title: fleet,
@@ -91,6 +91,7 @@ export default function ReportCard() {
                         dataIndex: [fleet, "doneOn"],
                         key: `${fleet}-doneOn`,
                         align: "center",
+                         width: 100,
                         render: (val: any) => <span style={{ fontSize: 13 }}>{val || "-"}</span>,
                         // render: (val: any, record: any) => val ? <Tag style={{ backgroundColor: record[fleet]?.bg || "", color: record[fleet]?.text || "#000" }}>{val}</Tag> : "-"
                     },
@@ -99,6 +100,7 @@ export default function ReportCard() {
                         dataIndex: [fleet, "validTill"],
                         key: `${fleet}-validTill`,
                         align: "center",
+                         width: 100,
                         render: (val: any, record: any) => val ? <Tag style={{ backgroundColor: record[fleet]?.bg || "", color: record[fleet]?.text || "#000" }}>{val}</Tag> : "-"
                     }
                 ]
@@ -134,7 +136,7 @@ export default function ReportCard() {
     });
 
     const trainingColumns = [
-        { title: "Training", dataIndex: "training", key: "training" },
+        { title: "Training", dataIndex: "training", key: "training", width: 180},
         ...trainingFleets.flatMap(fleet => ([
             {
                 title: fleet,
@@ -144,6 +146,7 @@ export default function ReportCard() {
                         dataIndex: [fleet, "doneOn"],
                         key: `${fleet}-doneOn`,
                         align: "center",
+                         width: 100,
                         render: (val: any) => <span style={{ fontSize: 13 }}>{val || "-"}</span>,
 
                         // render: (val: any, record: any) => val ? <Tag style={{ backgroundColor: record[fleet]?.bg || "", color: record[fleet]?.text || "#000" }}>{val}</Tag> : "-"
@@ -153,6 +156,7 @@ export default function ReportCard() {
                         dataIndex: [fleet, "validTill"],
                         key: `${fleet}-validTill`,
                         align: "center",
+                         width: 100,
                         render: (val: any, record: any) => val ? <Tag style={{ backgroundColor: record[fleet]?.bg || "", color: record[fleet]?.text || "#000" }}>{val}</Tag> : "-"
                     }
                 ]
