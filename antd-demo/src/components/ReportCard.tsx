@@ -58,107 +58,209 @@ export default function ReportCard() {
 
 
     //  Recurrent Checks
-    const fleets: string[] = crewReport
-        ? Array.from(new Set(crewReport.recurrentChecks.trainings.map((t: any) => t.fleet)))
-        : [];
+    // const fleets: string[] = crewReport
+    //     ? Array.from(new Set(crewReport.recurrentChecks.trainings.map((t: any) => t.fleet)))
+    //     : [];
 
 
 
-    const recurrentChecks = crewReport
-        ? crewReport.recurrentChecks.trainings.map((t: any, idx: number) => {
-            const fleetData = fleets.reduce<Record<string, any>>((acc, fleet) => {
-                acc[fleet] = t.fleet === fleet
-                    ? { date: t.validUntil, bg: t.bgrColor, text: t.textColor }
-                    : null;
-                return acc;
-            }, {});
+    // const recurrentChecks = crewReport
+    //     ? crewReport.recurrentChecks.trainings.map((t: any, idx: number) => {
+    //         const fleetData = fleets.reduce<Record<string, any>>((acc, fleet) => {
+    //             acc[fleet] = t.fleet === fleet
+    //                 ? { date: t.validUntil, bg: t.bgrColor, text: t.textColor }
+    //                 : null;
+    //             return acc;
+    //         }, {});
 
-            return {
-                id: idx + 1,
-                training: t.training,
-                doneOn: t.doneOn,
-                ...fleetData,
-            };
-        })
-        : [];
+    //         return {
+    //             id: idx + 1,
+    //             training: t.training,
+    //             doneOn: t.doneOn,
+    //             ...fleetData,
+    //         };
+    //     })
+    //     : [];
 
-    const checksColumns = [
-        { title: "Training", dataIndex: "training", key: "training" },
+    // const checksColumns = [
+    //     { title: "Training", dataIndex: "training", key: "training" },
+    //     {
+    //         title: "Done On",
+    //         dataIndex: "doneOn",
+    //         key: "doneOn",
+    //         render: (val: any) => val ? (
+    //             <Tag >{val}</Tag>
+    //         ) : "-"
+    //     },
+    //     ...fleets.map((fleet) => ({
+    //         title: fleet,
+    //         dataIndex: fleet,
+    //         key: fleet,
+    //         render: (val: any) =>
+    //             val?.date ? (
+    //                 <Tag
+    //                     style={{
+    //                         backgroundColor: val.bg || "",
+    //                         color: val.text || "#000",
+    //                     }}
+    //                 >
+    //                     {val.date}
+    //                 </Tag>
+    //             ) : (
+    //                 "-"
+    //             ),
+    //     })),
+    // ];
+
+// Step 1: Unique fleets backend se
+const fleets: string[] = crewReport
+  ? Array.from(new Set(crewReport.recurrentChecks.trainings.map((t: any) => t.fleet)))
+  : [];
+
+// Step 2: Group trainings by training name
+const trainingsMap: Record<string, any[]> = {};
+crewReport?.recurrentChecks.trainings.forEach((t: any) => {
+  if (!trainingsMap[t.training]) trainingsMap[t.training] = [];
+  trainingsMap[t.training].push(t);
+});
+
+// Step 3: Create rows dynamically
+const recurrentChecks = Object.keys(trainingsMap).map((trainingName, idx) => {
+  const row: Record<string, any> = { id: idx + 1, training: trainingName };
+  
+  fleets.forEach(fleet => {
+    const fleetTraining = trainingsMap[trainingName].find(t => t.fleet === fleet);
+    row[fleet] = fleetTraining
+      ? { doneOn: fleetTraining.doneOn, validTill: fleetTraining.validUntil, bg: fleetTraining.bgrColor, text: fleetTraining.textColor }
+      : null;
+  });
+
+  return row;
+});
+
+// Step 4: Create columns dynamically
+const checksColumns = [
+  { title: "Training", dataIndex: "training", key: "training" },
+  ...fleets.flatMap(fleet => ([
+    { 
+      title: fleet, 
+      children: [
         {
-            title: "Done On",
-            dataIndex: "doneOn",
-            key: "doneOn",
-            render: (val: any) => val ? (
-                <Tag >{val}</Tag>
-            ) : "-"
+          title: "Done On",
+          dataIndex: [fleet, "doneOn"],
+          key: `${fleet}-doneOn`,
+           align: "center",
+          render: (val: any, record: any) => val ? <Tag style={{ backgroundColor: record[fleet]?.bg || "", color: record[fleet]?.text || "#000" }}>{val}</Tag> : "-"
         },
-        ...fleets.map((fleet) => ({
-            title: fleet,
-            dataIndex: fleet,
-            key: fleet,
-            render: (val: any) =>
-                val?.date ? (
-                    <Tag
-                        style={{
-                            backgroundColor: val.bg || "",
-                            color: val.text || "#000",
-                        }}
-                    >
-                        {val.date}
-                    </Tag>
-                ) : (
-                    "-"
-                ),
-        })),
-    ];
-
+        {
+          title: "Valid Till",
+          dataIndex: [fleet, "validTill"],
+          key: `${fleet}-validTill`,
+           align: "center",
+          render: (val: any, record: any) => val ? <Tag style={{ backgroundColor: record[fleet]?.bg || "", color: record[fleet]?.text || "#000" }}>{val}</Tag> : "-"
+        }
+      ]
+    }
+  ]))
+];
 
 
 
 
     //  Recurrent Training
-    const recurrentTraining = crewReport
-        ? crewReport.recurrentTraining.trainings.map((t: any) => ({
-            id: t.id,
-            training: t.training,
-            doneOn: t.doneOn,
-            date: t.validUntil,
-            bg: t.bgrColor,
-            text: t.textColor,
-        }))
-        : [];
+    // const recurrentTraining = crewReport
+    //     ? crewReport.recurrentTraining.trainings.map((t: any) => ({
+    //         id: t.id,
+    //         training: t.training,
+    //         doneOn: t.doneOn,
+    //         date: t.validUntil,
+    //         bg: t.bgrColor,
+    //         text: t.textColor,
+    //     }))
+    //     : [];
 
-    const trainingColumns = [
-        { title: "Training", dataIndex: "training", key: "training" },
+    // const trainingColumns = [
+    //     { title: "Training", dataIndex: "training", key: "training" },
+    //     {
+    //         title: "Done On",
+    //         dataIndex: "doneOn",
+    //         key: "doneOn",
+    //         render: (val: any) =>
+    //             val ? (
+    //                 <Tag>{val}</Tag>
+    //             ) : "-",
+    //     },
+    //     {
+    //         title: crewReport?.recurrentTraining.trainings[0]?.validUntil
+    //             ? "Valid Until"
+    //             : "",
+    //         dataIndex: "date",
+    //         key: "date",
+    //         render: (_: any, record: any) =>
+    //             record.date ? (
+    //                 <Tag
+    //                     style={{
+    //                         backgroundColor: record.bg || "",
+    //                         color: record.text || "#000",
+    //                     }}
+    //                 >
+    //                     {record.date}
+    //                 </Tag>
+    //             ) : "-",
+    //     },
+    // ];
+
+// Step 1: Unique fleets from recurrentTraining
+const trainingFleets: string[] = crewReport
+  ? Array.from(new Set(crewReport.recurrentTraining.trainings.map((t: any) => t.fleet)))
+  : [];
+
+// Step 2: Group trainings by training name
+const trainingMap: Record<string, any[]> = {};
+crewReport?.recurrentTraining.trainings.forEach((t: any) => {
+  if (!trainingMap[t.training]) trainingMap[t.training] = [];
+  trainingMap[t.training].push(t);
+});
+
+// Step 3: Create rows dynamically
+const recurrentTraining = Object.keys(trainingMap).map((trainingName, idx) => {
+  const row: Record<string, any> = { id: idx + 1, training: trainingName };
+
+  trainingFleets.forEach(fleet => {
+    const fleetTraining = trainingMap[trainingName].find(t => t.fleet === fleet);
+    row[fleet] = fleetTraining
+      ? { doneOn: fleetTraining.doneOn, validTill: fleetTraining.validUntil, bg: fleetTraining.bgrColor, text: fleetTraining.textColor }
+      : null;
+  });
+
+  return row;
+});
+
+// Step 4: Create columns dynamically
+const trainingColumns = [
+  { title: "Training", dataIndex: "training", key: "training" },
+  ...trainingFleets.flatMap(fleet => ([
+    {
+      title: fleet,
+      children: [
         {
-            title: "Done On",
-            dataIndex: "doneOn",
-            key: "doneOn",
-            render: (val: any) =>
-                val ? (
-                    <Tag>{val}</Tag>
-                ) : "-",
+          title: "Done On",
+          dataIndex: [fleet, "doneOn"],
+          key: `${fleet}-doneOn`,
+           align: "center",
+          render: (val: any, record: any) => val ? <Tag style={{ backgroundColor: record[fleet]?.bg || "", color: record[fleet]?.text || "#000" }}>{val}</Tag> : "-"
         },
         {
-            title: crewReport?.recurrentTraining.trainings[0]?.validUntil
-                ? "Valid Until"
-                : "",
-            dataIndex: "date",
-            key: "date",
-            render: (_: any, record: any) =>
-                record.date ? (
-                    <Tag
-                        style={{
-                            backgroundColor: record.bg || "",
-                            color: record.text || "#000",
-                        }}
-                    >
-                        {record.date}
-                    </Tag>
-                ) : "-",
-        },
-    ];
-
+          title: "Valid Till",
+          dataIndex: [fleet, "validTill"],
+          key: `${fleet}-validTill`,
+           align: "center",
+          render: (val: any, record: any) => val ? <Tag style={{ backgroundColor: record[fleet]?.bg || "", color: record[fleet]?.text || "#000" }}>{val}</Tag> : "-"
+        }
+      ]
+    }
+  ]))
+];
 
 
 
@@ -275,7 +377,7 @@ export default function ReportCard() {
 
 
             {/* Layout */}
-            <div id="pilot-records" style={{ padding: 16, background: "#f0f2f5" }}>
+            <div id="pilot-records">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-6 items-start">
 
                     {/*  Personal Details + License + Medical Reports */}
@@ -325,16 +427,16 @@ export default function ReportCard() {
                                 <Table
                                     dataSource={[
                                         { key: "1", Item: "Abbreviation", value: user.abbreviation },
-                                        { key: "1", Item: "Phone", value: user.contactNo },
-                                        { key: "2", Item: "Email", value: user.emailId },
-                                        { key: "3", Item: "DOB", value: user.dateOfBirth },
-                                        { key: "3", Item: "Employee ID", value: user.employeCode },
-                                        { key: "3", Item: "Date of Joining", value: user.dateOfJoining },
-                                        { key: "3", Item: "PMR File No", value: user.pmrFileNo },
-                                        { key: "3", Item: "eGCA ID", value: user.egcaId },
-                                        { key: "3", Item: "Type Endorsed", value: user.typeEndorsed },
-                                        { key: "3", Item: "Current Type Flying", value: user.currentTypeFlying },
-                                        { key: "3", Item: "Address", value: user.homeBase },
+                                        { key: "2", Item: "Phone", value: user.contactNo },
+                                        { key: "3", Item: "Email", value: user.emailId },
+                                        { key: "4", Item: "DOB", value: user.dateOfBirth },
+                                        { key: "5", Item: "Employee ID", value: user.employeCode },
+                                        { key: "6", Item: "Date of Joining", value: user.dateOfJoining },
+                                        { key: "7", Item: "PMR File No", value: user.pmrFileNo },
+                                        { key: "8", Item: "eGCA ID", value: user.egcaId },
+                                        { key: "9", Item: "Type Endorsed", value: user.typeEndorsed },
+                                        { key: "10", Item: "Current Type Flying", value: user.currentTypeFlying },
+                                        { key: "11", Item: "Address", value: user.homeBase },
                                     ]}
                                     columns={[
                                         { title: "Item", dataIndex: "Item", key: "Item", render: text => <Text strong>{text}</Text> },
@@ -360,9 +462,9 @@ export default function ReportCard() {
                                         { key: "2", Item: "License Validity", value: user.licenseValidity },
                                         { key: "3", Item: "Class 1 Medical", value: user.medicalExpiry },
                                         { key: "4", Item: "RTR Number", value: user.rtrNumber },
-                                        { key: "4", Item: "RTR Validity ", value: user.rtrValidity },
-                                        { key: "5", Item: "FRTOL  Number ", value: user.frtolNumber },
-                                        { key: "5", Item: "FRTOL Validity ", value: user.frtolValidity },
+                                        { key: "5", Item: "RTR Validity ", value: user.rtrValidity },
+                                        { key: "6", Item: "FRTOL  Number ", value: user.frtolNumber },
+                                        { key: "7", Item: "FRTOL Validity ", value: user.frtolValidity },
                                     ]}
                                     columns={[
                                         {
@@ -392,7 +494,7 @@ export default function ReportCard() {
 
                             {/*  Medical Reports */}
                             <div>
-                                <Title level={5}>Medical Reports</Title>
+                                <Title level={5}>Medical </Title>
 
                                 <Table
                                     dataSource={[
