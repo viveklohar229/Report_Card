@@ -91,7 +91,8 @@ export default function ReportCard() {
                         dataIndex: [fleet, "doneOn"],
                         key: `${fleet}-doneOn`,
                         align: "center",
-                        render: (val: any, record: any) => val ? <Tag style={{ backgroundColor: record[fleet]?.bg || "", color: record[fleet]?.text || "#000" }}>{val}</Tag> : "-"
+                        render: (val: any) => <span style={{ fontSize: 13 }}>{val || "-"}</span>,
+                        // render: (val: any, record: any) => val ? <Tag style={{ backgroundColor: record[fleet]?.bg || "", color: record[fleet]?.text || "#000" }}>{val}</Tag> : "-"
                     },
                     {
                         title: "Valid Till",
@@ -143,7 +144,9 @@ export default function ReportCard() {
                         dataIndex: [fleet, "doneOn"],
                         key: `${fleet}-doneOn`,
                         align: "center",
-                        render: (val: any, record: any) => val ? <Tag style={{ backgroundColor: record[fleet]?.bg || "", color: record[fleet]?.text || "#000" }}>{val}</Tag> : "-"
+                        render: (val: any) => <span style={{ fontSize: 13 }}>{val || "-"}</span>,
+
+                        // render: (val: any, record: any) => val ? <Tag style={{ backgroundColor: record[fleet]?.bg || "", color: record[fleet]?.text || "#000" }}>{val}</Tag> : "-"
                     },
                     {
                         title: "Valid Till",
@@ -388,7 +391,7 @@ export default function ReportCard() {
                                     dataSource={[
                                         {
                                             key: "1",
-                                            type: "License",
+                                            type: "ATPL(H) / CHPL",
                                             number: user.license,
                                             validity: user.licenseValidity,
                                         },
