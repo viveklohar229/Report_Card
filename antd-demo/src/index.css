@@ -1,1 +1,10 @@
 @import "tailwindcss";
+
+
+.valid-till-cell {
+  padding-bottom: 2px;   /* normal padding */
+}
+
+.pdf-mode .valid-till-cell {
+  padding-bottom: 10px;    /* pdf padding */
+}
